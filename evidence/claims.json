@@ -1,0 +1,9 @@
+{
+  "kind": "python",
+  "IMPLEMENTED": "Asyncio loopback TCP JSON-lines server, live sequence-numbered events, bounded replay history, snapshot fallback, bounded subscriber queues, slow-consumer eviction, state/subscriber caps, CLI demo and metrics.",
+  "MEASURED": "See exact-commit receipt, CI artifacts and baseline. Documentation does not substitute for a passing run.",
+  "DESIGNED": "WebSocket/browser integration and durable multi-process event log remain extensions.",
+  "NOT_CLAIMED": "No WebSocket, ASGI, WebRTC, media transport, browser subscription UI, durable restart state, multi-process fanout, auth/TLS, distributed ordering, or internet deployment. StreamWriter/OS buffering is separate from application queue bounds. Active pre-subscription sockets have a two-second timeout but no global connection cap. Core event objects are trusted in-process data.",
+  "safe_cv_claim": "Built and tested a local async state feed with cursor replay, snapshot recovery, bounded slow-consumer queues, and observable CLI metrics.",
+  "authorship": "Fresh AI-assisted implementation using synthetic data and public role requirements; no private source used."
+}
