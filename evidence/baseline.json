@@ -1,7 +1,7 @@
 {
   "schema": "interview-lab-evidence/v1",
-  "measured_at_utc": "2026-10-03T16:36:35.867633+00:00",
-  "commit_sha": "0aaef1dbc08b25d6d4b7f28d2b9e175352b9e52b",
+  "measured_at_utc": "2026-10-03T16:43:35.351055+00:00",
+  "commit_sha": "16a17f69d7127b60fe8e8a60b735b0f35f8fe670",
   "tracked_worktree_dirty": false,
   "platform": "Windows",
   "architecture": "AMD64",
