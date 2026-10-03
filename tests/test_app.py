@@ -47,4 +47,5 @@ class WireTests(unittest.IsolatedAsyncioTestCase):
     async def test_demo_actual_transport(self):self.assertEqual((await demo())['snapshot']['state']['session'],'3')
     async def test_server_shutdown_cleans_subscriptions(self):
         r,w=await asyncio.open_connection('127.0.0.1',self.port);w.write(b'{"op":"subscribe"}\n');await w.drain();await r.readline()
-        await self.srv.close();self.assertEqual(len(self.srv.hub.clients),0);w.close();await w.wait_closed()
+        async with asyncio.timeout(3):await self.srv.close()
+        self.assertEqual(len(self.srv.hub.clients),0);self.assertEqual(len(self.srv.writers),0);w.close();await w.wait_closed()

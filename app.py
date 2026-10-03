@@ -27,18 +27,21 @@ class Hub:
     def unsubscribe(self,q):self.clients.discard(q)
 
 class RealtimeServer:
-    def __init__(self,hub=None):self.hub=hub or Hub();self.tasks=set();self.server=None
+    def __init__(self,hub=None):self.hub=hub or Hub();self.tasks=set();self.writers=set();self.server=None
     async def start(self):self.server=await asyncio.start_server(self.handle,'127.0.0.1',0,limit=8192);return self.server.sockets[0].getsockname()[1]
     async def close(self):
         self.server.close()
+        for writer in tuple(self.writers):writer.close()
         for t in tuple(self.tasks):t.cancel()
         await asyncio.gather(*self.tasks,return_exceptions=True)
         await self.server.wait_closed()
     async def handle(self,reader,writer):
-        task=asyncio.current_task();self.tasks.add(task);q=None
-        async def send(body):writer.write((json.dumps(body)+'\n').encode());await asyncio.wait_for(writer.drain(),2)
+        task=asyncio.current_task();self.tasks.add(task);self.writers.add(writer);q=None
+        async def send(body):
+            writer.write((json.dumps(body)+'\n').encode())
+            async with asyncio.timeout(2):await writer.drain()
         try:
-            body=json.loads(await asyncio.wait_for(reader.readline(),2))
+            async with asyncio.timeout(2):body=json.loads(await reader.readline())
             if not isinstance(body,dict):raise ValueError('INVALID_MESSAGE')
             if body.get('op')=='publish':await send(self.hub.publish(body.get('key'),body.get('value')))
             elif body.get('op')=='metrics':await send(dict(self.hub.metrics,subscribers=len(self.hub.clients)))
@@ -69,10 +72,12 @@ class RealtimeServer:
             try:await writer.wait_closed()
             except ConnectionError:pass
             self.tasks.discard(task)
+            self.writers.discard(writer)
 
 async def request(port,body):
     r,w=await asyncio.open_connection('127.0.0.1',port);w.write((json.dumps(body)+'\n').encode());await w.drain()
-    try:return json.loads(await asyncio.wait_for(r.readline(),3))
+    try:
+        async with asyncio.timeout(3):return json.loads(await r.readline())
     finally:w.close();await w.wait_closed()
 async def demo():
     srv=RealtimeServer(Hub(history=2));port=await srv.start()
